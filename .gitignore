@@ -1,0 +1,53 @@
+## .NET build folders
+bin/
+obj/
+out/
+
+## Visual Studio files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## VS Code
+.vscode/
+
+## Test result files
+[Tt]est[Rr]esult*/
+*.trx
+
+## Publish files
+publish/
+*.pubxml
+*.pubxml.user
+
+## NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+## Sensitive configuration files
+appsettings.Development.json
+appsettings.Local.json
+*.env
+
+## Logs
+*.log
+logs/
+
+## OS-generated files
+.DS_Store
+Thumbs.db
+
+## Code coverage files
+*.coverage
+*.coveragexml
+coverage/
+
+## Rider/ReSharper
+_ReSharper*/
+*.DotSettings.user
