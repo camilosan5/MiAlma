@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getRfpById } from '../api/rfps'
-import { getProposalsByRfp } from '../api/proposals'
+import { createProposal, getProposalsByRfp } from '../api/proposals'
 import { ApiError } from '../api/client'
 import { StatusBadge } from '../components/StatusBadge'
+import { ProposalForm } from '../components/ProposalForm'
 import type { ProposalDto, ProposalStatus, RfpWithProposalsDto } from '../types'
 
 const STATUS_OPTIONS: Array<ProposalStatus | 'All'> = ['All', 'Draft', 'InReview', 'Submitted', 'Won', 'Lost']
@@ -16,6 +17,9 @@ export function RfpDetailPage() {
   const [statusFilter, setStatusFilter] = useState<ProposalStatus | 'All'>('All')
   const [proposals, setProposals] = useState<ProposalDto[] | null>(null)
   const [proposalsError, setProposalsError] = useState<string | null>(null)
+  const [reloadToken, setReloadToken] = useState(0)
+
+  const [showCreateForm, setShowCreateForm] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -59,7 +63,15 @@ export function RfpDetailPage() {
     return () => {
       cancelled = true
     }
-  }, [id, statusFilter])
+  }, [id, statusFilter, reloadToken])
+
+  const handleCreate = async (title: string, content: string) => {
+    if (!id) return
+
+    await createProposal({ rfpId: id, title, content })
+    setShowCreateForm(false)
+    setReloadToken((token) => token + 1)
+  }
 
   if (rfpError) {
     return <p role="alert">{rfpError}</p>
@@ -110,6 +122,18 @@ export function RfpDetailPage() {
             </li>
           ))}
         </ul>
+      )}
+
+      {showCreateForm ? (
+        <ProposalForm
+          submitLabel="Create proposal"
+          onSubmit={handleCreate}
+          onCancel={() => setShowCreateForm(false)}
+        />
+      ) : (
+        <button type="button" onClick={() => setShowCreateForm(true)}>
+          New proposal
+        </button>
       )}
     </div>
   )
