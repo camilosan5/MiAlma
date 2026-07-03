@@ -21,3 +21,10 @@ export function updateProposal(id: string, data: UpdateProposalRequestDto): Prom
     body: JSON.stringify(data),
   })
 }
+
+export function changeProposalStatus(id: string, status: ProposalStatus): Promise<ProposalDto> {
+  return apiFetch<ProposalDto>(`/api/proposals/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  })
+}

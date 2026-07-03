@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getRfpById } from '../api/rfps'
-import { createProposal, getProposalsByRfp, updateProposal } from '../api/proposals'
+import { changeProposalStatus, createProposal, getProposalsByRfp, updateProposal } from '../api/proposals'
 import { ApiError } from '../api/client'
 import { StatusBadge } from '../components/StatusBadge'
+import { StatusActions } from '../components/StatusActions'
 import { ProposalForm } from '../components/ProposalForm'
 import type { ProposalDto, ProposalStatus, RfpWithProposalsDto } from '../types'
 
@@ -81,6 +82,11 @@ export function RfpDetailPage() {
     setReloadToken((token) => token + 1)
   }
 
+  const handleStatusChange = async (proposalId: string, next: ProposalStatus) => {
+    await changeProposalStatus(proposalId, next)
+    setReloadToken((token) => token + 1)
+  }
+
   if (rfpError) {
     return <p role="alert">{rfpError}</p>
   }
@@ -137,15 +143,16 @@ export function RfpDetailPage() {
               </li>
             ) : (
               <li key={proposal.id}>
-                {proposal.title} — <StatusBadge status={proposal.status} />
+                {proposal.title} — <StatusBadge status={proposal.status} />{' '}
                 {EDITABLE_STATUSES.includes(proposal.status) && (
-                  <>
-                    {' '}
-                    <button type="button" onClick={() => setEditingId(proposal.id)}>
-                      Edit
-                    </button>
-                  </>
-                )}
+                  <button type="button" onClick={() => setEditingId(proposal.id)}>
+                    Edit
+                  </button>
+                )}{' '}
+                <StatusActions
+                  status={proposal.status}
+                  onTransition={(next) => handleStatusChange(proposal.id, next)}
+                />
               </li>
             ),
           )}
