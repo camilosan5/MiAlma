@@ -1,21 +1,28 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getRfpById } from '../api/rfps'
+import { getProposalsByRfp } from '../api/proposals'
 import { ApiError } from '../api/client'
 import { StatusBadge } from '../components/StatusBadge'
-import type { RfpWithProposalsDto } from '../types'
+import type { ProposalDto, ProposalStatus, RfpWithProposalsDto } from '../types'
+
+const STATUS_OPTIONS: Array<ProposalStatus | 'All'> = ['All', 'Draft', 'InReview', 'Submitted', 'Won', 'Lost']
 
 export function RfpDetailPage() {
   const { id } = useParams<{ id: string }>()
   const [rfp, setRfp] = useState<RfpWithProposalsDto | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [rfpError, setRfpError] = useState<string | null>(null)
+
+  const [statusFilter, setStatusFilter] = useState<ProposalStatus | 'All'>('All')
+  const [proposals, setProposals] = useState<ProposalDto[] | null>(null)
+  const [proposalsError, setProposalsError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id) return
 
     let cancelled = false
     setRfp(null)
-    setError(null)
+    setRfpError(null)
 
     getRfpById(id)
       .then((data) => {
@@ -23,7 +30,7 @@ export function RfpDetailPage() {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof ApiError ? err.message : 'Failed to load this RFP.')
+          setRfpError(err instanceof ApiError ? err.message : 'Failed to load this RFP.')
         }
       })
 
@@ -32,8 +39,30 @@ export function RfpDetailPage() {
     }
   }, [id])
 
-  if (error) {
-    return <p role="alert">{error}</p>
+  useEffect(() => {
+    if (!id) return
+
+    let cancelled = false
+    setProposals(null)
+    setProposalsError(null)
+
+    getProposalsByRfp(id, statusFilter === 'All' ? undefined : statusFilter)
+      .then((data) => {
+        if (!cancelled) setProposals(data)
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setProposalsError(err instanceof ApiError ? err.message : 'Failed to load proposals.')
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [id, statusFilter])
+
+  if (rfpError) {
+    return <p role="alert">{rfpError}</p>
   }
 
   if (rfp === null) {
@@ -55,11 +84,27 @@ export function RfpDetailPage() {
       <p>{rfp.description}</p>
 
       <h3>Proposals</h3>
-      {rfp.proposals.length === 0 ? (
-        <p>No proposals yet for this RFP.</p>
-      ) : (
+      <label htmlFor="status-filter">Filter by status: </label>
+      <select
+        id="status-filter"
+        value={statusFilter}
+        onChange={(e) => setStatusFilter(e.target.value as ProposalStatus | 'All')}
+      >
+        {STATUS_OPTIONS.map((status) => (
+          <option key={status} value={status}>
+            {status}
+          </option>
+        ))}
+      </select>
+
+      {proposalsError && <p role="alert">{proposalsError}</p>}
+      {!proposalsError && proposals === null && <p>Loading proposals…</p>}
+      {!proposalsError && proposals !== null && proposals.length === 0 && (
+        <p>No proposals match this filter.</p>
+      )}
+      {!proposalsError && proposals !== null && proposals.length > 0 && (
         <ul>
-          {rfp.proposals.map((proposal) => (
+          {proposals.map((proposal) => (
             <li key={proposal.id}>
               {proposal.title} — <StatusBadge status={proposal.status} />
             </li>
