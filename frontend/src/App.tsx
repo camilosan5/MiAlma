@@ -3,6 +3,7 @@ import { AuthProvider } from './auth/AuthContext'
 import { ProtectedRoute } from './auth/ProtectedRoute'
 import { Layout } from './components/Layout'
 import { LoginPage } from './pages/LoginPage'
+import { RfpListPage } from './pages/RfpListPage'
 
 function App() {
   return (
@@ -12,7 +13,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
-              <Route path="/rfps" element={<p>RFPs </p>} />
+              <Route path="/rfps" element={<RfpListPage />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/rfps" replace />} />
