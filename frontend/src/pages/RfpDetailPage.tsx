@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getRfpById } from '../api/rfps'
-import { createProposal, getProposalsByRfp } from '../api/proposals'
+import { createProposal, getProposalsByRfp, updateProposal } from '../api/proposals'
 import { ApiError } from '../api/client'
 import { StatusBadge } from '../components/StatusBadge'
 import { ProposalForm } from '../components/ProposalForm'
 import type { ProposalDto, ProposalStatus, RfpWithProposalsDto } from '../types'
 
 const STATUS_OPTIONS: Array<ProposalStatus | 'All'> = ['All', 'Draft', 'InReview', 'Submitted', 'Won', 'Lost']
+const EDITABLE_STATUSES: ProposalStatus[] = ['Draft', 'InReview']
 
 export function RfpDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -20,6 +21,7 @@ export function RfpDetailPage() {
   const [reloadToken, setReloadToken] = useState(0)
 
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -73,6 +75,12 @@ export function RfpDetailPage() {
     setReloadToken((token) => token + 1)
   }
 
+  const handleUpdate = async (proposalId: string, title: string, content: string) => {
+    await updateProposal(proposalId, { title, content })
+    setEditingId(null)
+    setReloadToken((token) => token + 1)
+  }
+
   if (rfpError) {
     return <p role="alert">{rfpError}</p>
   }
@@ -116,11 +124,31 @@ export function RfpDetailPage() {
       )}
       {!proposalsError && proposals !== null && proposals.length > 0 && (
         <ul>
-          {proposals.map((proposal) => (
-            <li key={proposal.id}>
-              {proposal.title} — <StatusBadge status={proposal.status} />
-            </li>
-          ))}
+          {proposals.map((proposal) =>
+            editingId === proposal.id ? (
+              <li key={proposal.id}>
+                <ProposalForm
+                  initialTitle={proposal.title}
+                  initialContent={proposal.content}
+                  submitLabel="Save changes"
+                  onSubmit={(title, content) => handleUpdate(proposal.id, title, content)}
+                  onCancel={() => setEditingId(null)}
+                />
+              </li>
+            ) : (
+              <li key={proposal.id}>
+                {proposal.title} — <StatusBadge status={proposal.status} />
+                {EDITABLE_STATUSES.includes(proposal.status) && (
+                  <>
+                    {' '}
+                    <button type="button" onClick={() => setEditingId(proposal.id)}>
+                      Edit
+                    </button>
+                  </>
+                )}
+              </li>
+            ),
+          )}
         </ul>
       )}
 
