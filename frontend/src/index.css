@@ -13,3 +13,31 @@ body {
   padding: 24px;
   box-sizing: border-box;
 }
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  border: 1px solid currentColor;
+}
+
+.status-draft {
+  color: #6b7280;
+}
+
+.status-inreview {
+  color: #b45309;
+}
+
+.status-submitted {
+  color: #1d4ed8;
+}
+
+.status-won {
+  color: #15803d;
+}
+
+.status-lost {
+  color: #b91c1c;
+}
