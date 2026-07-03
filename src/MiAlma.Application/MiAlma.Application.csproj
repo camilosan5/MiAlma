@@ -10,4 +10,8 @@
     <ProjectReference Include="..\MiAlma.Domain\MiAlma.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="11.1.0" />
+  </ItemGroup>
+
 </Project>
