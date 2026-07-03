@@ -1,6 +1,8 @@
 using System.Text;
 using MediatR;
 using MiAlma.Api.Middleware;
+using MiAlma.Api.Security;
+using MiAlma.Application.Interfaces;
 using MiAlma.Domain.Interfaces;
 using MiAlma.Infrastructure.Persistence;
 using MiAlma.Infrastructure.Repositories;
@@ -15,7 +17,9 @@ var builder = WebApplication.CreateBuilder(args);
 const string CorsPolicyName = "Frontend";
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -55,6 +59,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
     ?? throw new InvalidOperationException("Missing 'Jwt' configuration section.");

@@ -42,12 +42,8 @@ namespace MiAlma.Application.Features.Auth.Commands
 
             await _userRepository.AddAsync(user);
 
-            var (token, expiresAtUtc) = _tokenService.GenerateToken(user);
-
             return new LoginResponseDto
             {
-                Token = token,
-                ExpiresAtUtc = expiresAtUtc,
                 UserId = user.Id,
                 Email = user.Email
             };

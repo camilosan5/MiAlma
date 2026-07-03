@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using MediatR;
 using MiAlma.Application.DTOs;
 using MiAlma.Application.Features.Proposals.Queries;

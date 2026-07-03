@@ -30,6 +30,7 @@ namespace MiAlma.Api.Middleware
                     UnauthorizedException => (HttpStatusCode.Unauthorized, ex.Message),
                     ConflictException => (HttpStatusCode.Conflict, ex.Message),
                     InvalidStatusTransitionException => (HttpStatusCode.BadRequest, ex.Message),
+                    ProposalNotEditableException => (HttpStatusCode.BadRequest, ex.Message),
                     ArgumentException => (HttpStatusCode.BadRequest, ex.Message),
                     _ => (HttpStatusCode.InternalServerError, "An unexpected error occurred.")
                 };
