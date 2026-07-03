@@ -1,4 +1,5 @@
 using MiAlma.Domain.Entities;
+using MiAlma.Domain.Interfaces;
 
 namespace MiAlma.Infrastructure.Persistence
 {
@@ -8,7 +9,7 @@ namespace MiAlma.Infrastructure.Persistence
         public const string TestUserEmail = "test@mialma.dev";
         public const string TestUserPassword = "Password123!";
 
-        public static async Task SeedAsync(MiAlmaDbContext context)
+        public static async Task SeedAsync(MiAlmaDbContext context, IPasswordHasher passwordHasher)
         {
             if (!context.Users.Any())
             {
@@ -16,7 +17,7 @@ namespace MiAlma.Infrastructure.Persistence
                 {
                     Id = TestUserId,
                     Email = TestUserEmail,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(TestUserPassword),
+                    PasswordHash = passwordHasher.Hash(TestUserPassword),
                     CreatedAt = DateTime.UtcNow
                 });
             }

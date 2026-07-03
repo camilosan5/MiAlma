@@ -2,12 +2,14 @@ using MediatR;
 using MiAlma.Application.DTOs;
 using MiAlma.Application.Features.Proposals.Queries;
 using MiAlma.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MiAlma.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ProposalsController : ControllerBase
     {
         private readonly IMediator _mediator;

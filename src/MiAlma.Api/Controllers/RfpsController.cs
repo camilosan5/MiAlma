@@ -1,12 +1,14 @@
 using MediatR;
 using MiAlma.Application.DTOs;
 using MiAlma.Application.Features.Rfps.Queries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MiAlma.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class RfpsController : ControllerBase
     {
         private readonly IMediator _mediator;
