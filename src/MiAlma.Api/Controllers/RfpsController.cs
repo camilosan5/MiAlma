@@ -24,9 +24,9 @@ namespace MiAlma.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<RfpDto>> GetById(Guid id)
+        public async Task<ActionResult<RfpWithProposalsDto>> GetById(Guid id)
         {
-            var result = await _mediator.Send(new GetRfpByIdQuery(id));
+            var result = await _mediator.Send(new GetRfpByIdWithProposalsQuery(id));
             return Ok(result);
         }
     }
