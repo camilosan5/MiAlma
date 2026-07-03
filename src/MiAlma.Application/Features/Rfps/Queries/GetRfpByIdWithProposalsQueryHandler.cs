@@ -5,11 +5,11 @@ using MiAlma.Domain.Interfaces;
 
 namespace MiAlma.Application.Features.Rfps.Queries
 {
-    public class GetRfpByIdQueryHandler : IRequestHandler<GetRfpByIdWithProposalsQuery, RfpWithProposalsDto>
+    public class GetRfpByIdWithProposalsQueryHandler : IRequestHandler<GetRfpByIdWithProposalsQuery, RfpWithProposalsDto>
     {
         private readonly IRfpRepository _rfpRepository;
 
-        public GetRfpByIdQueryHandler(IRfpRepository rfpRepository)
+        public GetRfpByIdWithProposalsQueryHandler(IRfpRepository rfpRepository)
         {
             _rfpRepository = rfpRepository;
         }
