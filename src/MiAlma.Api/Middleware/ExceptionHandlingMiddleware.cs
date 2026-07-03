@@ -28,6 +28,7 @@ namespace MiAlma.Api.Middleware
                     NotFoundException => (HttpStatusCode.NotFound, ex.Message),
                     ForbiddenException => (HttpStatusCode.Forbidden, ex.Message),
                     UnauthorizedException => (HttpStatusCode.Unauthorized, ex.Message),
+                    ConflictException => (HttpStatusCode.Conflict, ex.Message),
                     InvalidStatusTransitionException => (HttpStatusCode.BadRequest, ex.Message),
                     ArgumentException => (HttpStatusCode.BadRequest, ex.Message),
                     _ => (HttpStatusCode.InternalServerError, "An unexpected error occurred.")

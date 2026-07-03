@@ -24,5 +24,13 @@ namespace MiAlma.Api.Controllers
             var result = await _mediator.Send(new LoginCommand(request.Email, request.Password));
             return Ok(result);
         }
+
+        [AllowAnonymous]
+        [HttpPost("register")]
+        public async Task<ActionResult<LoginResponseDto>> Register([FromBody] RegisterRequestDto request)
+        {
+            var result = await _mediator.Send(new RegisterCommand(request.Email, request.Password));
+            return StatusCode(StatusCodes.Status201Created, result);
+        }
     }
 }
