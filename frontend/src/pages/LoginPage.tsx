@@ -28,10 +28,10 @@ export function LoginPage() {
   }
 
   return (
-    <main>
-      <h1>MiAlma — Proposal Tracker</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
+    <main className="auth-page">
+      <h1>MiAlma</h1>
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <div className="form-group">
           <label htmlFor="email">Email</label>
           <input
             id="email"
@@ -41,7 +41,7 @@ export function LoginPage() {
             required
           />
         </div>
-        <div>
+        <div className="form-group">
           <label htmlFor="password">Password</label>
           <input
             id="password"
@@ -51,8 +51,12 @@ export function LoginPage() {
             required
           />
         </div>
-        {error && <p role="alert">{error}</p>}
-        <button type="submit" disabled={loading}>
+        {error && (
+          <p className="alert" role="alert">
+            {error}
+          </p>
+        )}
+        <button className="btn btn-primary btn-block" type="submit" disabled={loading}>
           {loading ? 'Signing in…' : 'Sign in'}
         </button>
       </form>

@@ -34,10 +34,11 @@ export function StatusActions({ status, onTransition }: StatusActionsProps) {
   }
 
   return (
-    <span>
+    <span className="status-actions">
       {nextOptions.map((next) => (
         <button
           key={next}
+          className="btn btn-secondary btn-sm"
           type="button"
           onClick={() => handleClick(next)}
           disabled={submitting !== null}
@@ -45,7 +46,11 @@ export function StatusActions({ status, onTransition }: StatusActionsProps) {
           {submitting === next ? 'Updating…' : `Mark as ${next}`}
         </button>
       ))}
-      {error && <span role="alert"> {error}</span>}
+      {error && (
+        <span className="alert" role="alert">
+          {error}
+        </span>
+      )}
     </span>
   )
 }

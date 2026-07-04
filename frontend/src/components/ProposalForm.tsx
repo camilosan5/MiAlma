@@ -41,9 +41,8 @@ export function ProposalForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div>
+      <div className="form-group">
         <label htmlFor="proposal-title">Title</label>
-        <br />
         <input
           id="proposal-title"
           value={title}
@@ -51,9 +50,8 @@ export function ProposalForm({
           required
         />
       </div>
-      <div>
+      <div className="form-group">
         <label htmlFor="proposal-content">Content</label>
-        <br />
         <textarea
           id="proposal-content"
           value={content}
@@ -61,15 +59,21 @@ export function ProposalForm({
           rows={6}
         />
       </div>
-      {error && <p role="alert">{error}</p>}
-      <button type="submit" disabled={submitting}>
-        {submitting ? 'Saving…' : submitLabel}
-      </button>
-      {onCancel && (
-        <button type="button" onClick={onCancel} disabled={submitting}>
-          Cancel
-        </button>
+      {error && (
+        <p className="alert" role="alert">
+          {error}
+        </p>
       )}
+      <div className="form-actions">
+        <button className="btn btn-primary" type="submit" disabled={submitting}>
+          {submitting ? 'Saving…' : submitLabel}
+        </button>
+        {onCancel && (
+          <button className="btn btn-secondary" type="button" onClick={onCancel} disabled={submitting}>
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
   )
 }

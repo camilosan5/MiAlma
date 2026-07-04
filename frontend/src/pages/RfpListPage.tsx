@@ -27,7 +27,11 @@ export function RfpListPage() {
   }, [])
 
   if (error) {
-    return <p role="alert">{error}</p>
+    return (
+      <p className="alert" role="alert">
+        {error}
+      </p>
+    )
   }
 
   if (rfps === null) {
@@ -39,12 +43,17 @@ export function RfpListPage() {
   }
 
   return (
-    <div>
+    <div className="page">
       <h2>RFPs</h2>
-      <ul>
+      <ul className="card-list">
         {rfps.map((rfp) => (
-          <li key={rfp.id}>
-            <Link to={`/rfps/${rfp.id}`}>{rfp.title}</Link> — {rfp.agency} (deadline: {rfp.deadline})
+          <li key={rfp.id} className="card">
+            <Link className="rfp-card__title" to={`/rfps/${rfp.id}`}>
+              {rfp.title}
+            </Link>
+            <p className="rfp-card__meta">
+              {rfp.agency} — deadline: {rfp.deadline}
+            </p>
           </li>
         ))}
       </ul>

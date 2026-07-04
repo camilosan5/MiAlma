@@ -88,7 +88,11 @@ export function RfpDetailPage() {
   }
 
   if (rfpError) {
-    return <p role="alert">{rfpError}</p>
+    return (
+      <p className="alert" role="alert">
+        {rfpError}
+      </p>
+    )
   }
 
   if (rfp === null) {
@@ -96,43 +100,48 @@ export function RfpDetailPage() {
   }
 
   return (
-    <div>
+    <div className="page">
       <p>
-        <Link to="/rfps">&larr; Back to RFPs</Link>
+        <Link className="back-link" to="/rfps">
+          &larr; Back to RFPs
+        </Link>
       </p>
       <h2>{rfp.title}</h2>
-      <p>
-        <strong>Agency:</strong> {rfp.agency}
-      </p>
-      <p>
-        <strong>Deadline:</strong> {rfp.deadline}
+      <p className="meta">
+        {rfp.agency} — deadline: {rfp.deadline}
       </p>
       <p>{rfp.description}</p>
 
       <h3>Proposals</h3>
-      <label htmlFor="status-filter">Filter by status: </label>
-      <select
-        id="status-filter"
-        value={statusFilter}
-        onChange={(e) => setStatusFilter(e.target.value as ProposalStatus | 'All')}
-      >
-        {STATUS_OPTIONS.map((status) => (
-          <option key={status} value={status}>
-            {status}
-          </option>
-        ))}
-      </select>
+      <div className="toolbar">
+        <label htmlFor="status-filter">Filter by status</label>
+        <select
+          id="status-filter"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as ProposalStatus | 'All')}
+        >
+          {STATUS_OPTIONS.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      {proposalsError && <p role="alert">{proposalsError}</p>}
+      {proposalsError && (
+        <p className="alert" role="alert">
+          {proposalsError}
+        </p>
+      )}
       {!proposalsError && proposals === null && <p>Loading proposals…</p>}
       {!proposalsError && proposals !== null && proposals.length === 0 && (
         <p>No proposals match this filter.</p>
       )}
       {!proposalsError && proposals !== null && proposals.length > 0 && (
-        <ul>
+        <ul className="card-list">
           {proposals.map((proposal) =>
             editingId === proposal.id ? (
-              <li key={proposal.id}>
+              <li key={proposal.id} className="card">
                 <ProposalForm
                   initialTitle={proposal.title}
                   initialContent={proposal.content}
@@ -142,17 +151,24 @@ export function RfpDetailPage() {
                 />
               </li>
             ) : (
-              <li key={proposal.id}>
-                {proposal.title} — <StatusBadge status={proposal.status} />{' '}
-                {EDITABLE_STATUSES.includes(proposal.status) && (
-                  <button type="button" onClick={() => setEditingId(proposal.id)}>
-                    Edit
-                  </button>
-                )}{' '}
-                <StatusActions
-                  status={proposal.status}
-                  onTransition={(next) => handleStatusChange(proposal.id, next)}
-                />
+              <li key={proposal.id} className="card proposal-card">
+                <span className="proposal-card__title">{proposal.title}</span>
+                <div className="proposal-card__actions">
+                  <StatusBadge status={proposal.status} />
+                  {EDITABLE_STATUSES.includes(proposal.status) && (
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      type="button"
+                      onClick={() => setEditingId(proposal.id)}
+                    >
+                      Edit
+                    </button>
+                  )}
+                  <StatusActions
+                    status={proposal.status}
+                    onTransition={(next) => handleStatusChange(proposal.id, next)}
+                  />
+                </div>
               </li>
             ),
           )}
@@ -166,7 +182,7 @@ export function RfpDetailPage() {
           onCancel={() => setShowCreateForm(false)}
         />
       ) : (
-        <button type="button" onClick={() => setShowCreateForm(true)}>
+        <button className="btn btn-primary" type="button" onClick={() => setShowCreateForm(true)}>
           New proposal
         </button>
       )}

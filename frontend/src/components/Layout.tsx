@@ -6,16 +6,17 @@ export function Layout() {
 
   return (
     <div>
-      <header>
-        <strong>MiAlma — Proposal Tracker</strong>
+      <header className="app-header">
+        <span className="app-header__brand">MiAlma — Proposal Tracker</span>
         {user && (
-          <span>
-            {' '}
-            — {user.email} <button onClick={logout}>Log out</button>
-          </span>
+          <div className="app-header__user">
+            <span>{user.email}</span>
+            <button className="btn btn-secondary btn-sm" onClick={logout}>
+              Log out
+            </button>
+          </div>
         )}
       </header>
-      <hr />
       <Outlet />
     </div>
   )

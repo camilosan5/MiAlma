@@ -1,26 +1,26 @@
 # MiAlma — Proposal Tracker
 
-A small proposal-tracking platform for RFPs. Backend built with .NET 8 Web API + PostgreSQL (EF Core, code-first, Clean Architecture), frontend with React + TypeScript (Vite).
+A small app for tracking proposals against RFPs. Backend is a .NET 8 Web API with PostgreSQL (EF Core, Clean Architecture), frontend is React + TypeScript with Vite.
 
 ## 1. How to run it
 
-Prerequisites: .NET 8 SDK, Node.js (18+), and a PostgreSQL instance running locally (no Docker).
+You'll need the .NET 8 SDK, Node.js (18+), and PostgreSQL running locally (no Docker involved).
 
 ### Backend
 
-1. Create an empty database in your local PostgreSQL instance, e.g. `mialma`.
-2. Edit `src/MiAlma.Api/appsettings.Development.json` and set `ConnectionStrings:DefaultConnection` with your real username/password:
+1. Create an empty database, e.g. `mialma`.
+2. Open `src/MiAlma.Api/appsettings.Development.json` and update the connection string with your own PostgreSQL user/password:
    ```json
    "DefaultConnection": "Host=localhost;Port=5432;Database=mialma;Username=<your_user>;Password=<your_password>"
    ```
-3. Run it either from the terminal or from Visual Studio:
+3. Run it, either from the terminal:
    ```bash
    cd src/MiAlma.Api
    dotnet run
    ```
-   or press Run in Visual Studio (either the `http` or `https` launch profile works). On startup, the app automatically applies EF Core migrations and seeds sample data (no need to run `dotnet ef` by hand). The API is available over plain HTTP at `http://localhost:5268` in both launch profiles, with Swagger at `http://localhost:5268/swagger`. (The `https` profile also exposes `https://localhost:7148`, but the frontend is configured to talk to the HTTP port to avoid local dev-certificate trust issues.)
+   or by hitting Run in Visual Studio (both the `http` and `https` profiles work fine). On startup it applies the EF Core migrations and seeds some sample data by itself, so there's no manual `dotnet ef` step. It'll be listening on `http://localhost:5268`, with Swagger at `http://localhost:5268/swagger`. (There's also an HTTPS endpoint at `https://localhost:7148`, but the frontend talks to the plain HTTP one to avoid dealing with the local dev certificate.)
 
-**Seeded test user:**
+**Test user (already seeded):**
 - Email: `test@mialma.dev`
 - Password: `Password123!`
 
@@ -32,9 +32,9 @@ npm install
 npm run dev
 ```
 
-Defaults to `VITE_API_URL=http://localhost:5268` (see `.env.example`). Runs on `http://localhost:5173` — the backend has CORS enabled specifically for that origin, so if you change the frontend port you'll also need to update `Program.cs`. If port 5173 is already taken, Vite will silently pick the next free one (5174, 5175, ...) and CORS will then reject the requests — free up 5173 first, or update `Program.cs` to match.
+It expects the API at `http://localhost:5268` by default (see `.env.example`), and runs on `http://localhost:5173`. The backend's CORS is set up specifically for that port, so if it's already taken and Vite jumps to 5174/5175, the requests will get blocked — just free up 5173 first, or update the CORS origin in `Program.cs` if you'd rather change it.
 
-Open `http://localhost:5173`, log in with the test user, and browse the seeded RFPs.
+Once it's running, open `http://localhost:5173`, log in with the test user above, and browse the seeded RFPs.
 
 ### Tests
 
@@ -42,23 +42,28 @@ Open `http://localhost:5173`, log in with the test user, and browse the seeded R
 dotnet test src/MiAlma.Tests/MiAlma.Tests.csproj
 ```
 
-## 2. Where the lifecycle rules are enforced, and why
+## 2. Where the lifecycle rules live, and why
 
-The transition rules (`Draft → InReview → Submitted → Won|Lost`, only one step forward at a time, no going back, and no editing title/content once `Submitted`) live in two deliberately separate places:
+The rules around how a proposal moves between statuses (`Draft → InReview → Submitted → Won|Lost`, one step at a time, no going backwards, and no editing once it's `Submitted`) are split across two places on purpose:
 
-- **`MiAlma.Domain/Policies/ProposalStatusPolicy.cs`**: the matrix of valid transitions. It's pure business logic with no dependency on infrastructure or MediatR, so it can be tested in isolation (see `MiAlma.Tests/Domain/ProposalStatusPolicyTests.cs`).
-- **`MiAlma.Application/Features/Proposals/Commands/*Handler.cs`**: the command handlers (`ChangeProposalStatusCommandHandler`, `UpdateProposalCommandHandler`) are the ones that call that policy and decide which domain exception to throw (`InvalidStatusTransitionException`, `ProposalNotEditableException`, `ForbiddenException` for the ownership check).
+- `MiAlma.Domain/Policies/ProposalStatusPolicy.cs` holds the actual rules — which transitions are allowed from which status. It doesn't touch the database or any framework code, so it's easy to unit test on its own (see `MiAlma.Tests/Domain/ProposalStatusPolicyTests.cs`).
+- The command handlers in `MiAlma.Application/Features/Proposals/Commands/` (`ChangeProposalStatusCommandHandler`, `UpdateProposalCommandHandler`) are the ones that actually call that policy and throw the right exception when something's not allowed (`InvalidStatusTransitionException`, `ProposalNotEditableException`, or `ForbiddenException` if you're not the owner).
 
-I put the policy in Domain instead of the controller or the database because it's a *business* rule, not an HTTP transport detail or a persistence concern: it needs to be evaluable without an `HttpContext` or a PostgreSQL connection, and it must behave the same whether the caller is a REST controller, a test, or (in the future) a background job.
+The reasoning for keeping this in the Domain layer instead of the controller (or as a database constraint) is that it's a business rule, not something tied to HTTP or to how the data is stored — it should work the same way no matter who's calling it: a controller, a test, or something else down the line.
 
-Domain exceptions are translated into the correct HTTP status codes (400/403/404/401/409, never 500 for these cases) in a single place: `MiAlma.Api/Middleware/ExceptionHandlingMiddleware.cs`. That way the handlers know nothing about HTTP, and controllers don't repeat `try/catch` in every action.
+All of those exceptions get turned into proper HTTP status codes (400/403/404/401/409, never a bare 500) in one single spot: `MiAlma.Api/Middleware/ExceptionHandlingMiddleware.cs`. That keeps the error-handling logic out of the controllers and out of the handlers themselves.
 
 ## 3. What I'd do differently for production
 
-Right now the JWT signing secret (`Jwt:Key`) and the database password live in plain text in `appsettings.Development.json`, which is also committed to the repo. For production, the first thing I'd pull out of there would be moving both to environment variables or a secrets manager (Azure Key Vault, AWS Secrets Manager, or at minimum `dotnet user-secrets` for local development), and rotating the current JWT key since it's already been exposed in the git history.
+Right now the JWT secret and the database password are sitting in plain text inside `appsettings.Development.json`, which is committed to the repo. That's fine for a local take-home project, but for production I'd move both out to environment variables or a proper secrets manager (Azure Key Vault, AWS Secrets Manager, or at least `dotnet user-secrets` locally), and I'd rotate the JWT key since it's already sitting in the git history.
+
+On the frontend, a few other things I'd want before this went in front of real users:
+- Pick an actual UI/styling library instead of the plain hand-written CSS I used here, once there's a real design to work from.
+- Add proposal templates, so what gets created looks more polished and professional when it's actually presented to a client, instead of just a free-text box.
+- Swap the plain `<textarea>` for a real rich-text editor (formatting, headings, lists, etc.).
 
 ## 4. Time spent and help used
 
-This project was built iteratively with **Claude Code** (Anthropic) as a pair-programming assistant across several phases (backend: EF Core infrastructure, JWT auth, proposals CRUD; frontend: 10 incremental steps, each in its own commit). The assistant generated most of the codebase, ran builds/tests and end-to-end verification against the real backend at each step, and I reviewed, gave design direction, and approved each commit before moving on.
+I used Claude Code and ChatGPT throughout this project — for architecture suggestions, picking compatible versions of Node and .NET, choosing the security library for password hashing (BCrypt), and getting a step-by-step plan for how to build everything (the backend in phases, the frontend in small incremental steps, each one committed separately). Claude Code also helped write some of the more repetitive, boilerplate-y parts of the code, like DTOs. I also leaned on a couple of my own past personal projects, both backend and frontend, for patterns and structure.
 
-_(Fill in your actual estimate of hours spent reviewing/directing the work here — the repo's commit history has the step-by-step breakdown if that's useful as a reference.)_
+All in, this took me around **20 hours**.
