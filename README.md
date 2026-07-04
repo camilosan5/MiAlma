@@ -55,7 +55,7 @@ All of those exceptions get turned into proper HTTP status codes (400/403/404/40
 
 ## 3. What I'd do differently for production
 
-Right now the JWT secret and the database password are sitting in plain text inside `appsettings.Development.json`, which is committed to the repo. That's fine for a local take-home project, but for production I'd move both out to environment variables or a proper secrets manager (Azure Key Vault, AWS Secrets Manager, or at least `dotnet user-secrets` locally), and I'd rotate the JWT key since it's already sitting in the git history.
+Right now the JWT secret and the database password are sitting in plain text inside `appsettings.Development.json`. That file is gitignored, so it never actually made it into the repo, but it's still a local-only config file rather than a real secret store. For production I'd move both out to environment variables or a proper secrets manager (Azure Key Vault, AWS Secrets Manager, or at least `dotnet user-secrets` locally).
 
 On the frontend, a few other things I'd want before this went in front of real users:
 - Pick an actual UI/styling library instead of the plain hand-written CSS I used here, once there's a real design to work from.
